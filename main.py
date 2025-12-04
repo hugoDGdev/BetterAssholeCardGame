@@ -1,7 +1,9 @@
 from random import shuffle
+from colorama import Fore, Back, Style
 
 valeurCarte = ["3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A", "2"]
 listeSymbole = ["S", "C", "H", "D"]
+# Spades = Piques; Clubs = Trèfles; Hearts = Coeurs (bah ouais logique); Diamonds = Carreaux
 listeCartes = []
 
 #utils
@@ -15,7 +17,7 @@ def parserCartes(entree, joueur, typePli, min):
     cartes = []
 
     for c in codes:
-        if len(c) <2:
+        if len(c) <2 and len(c) >2:
             print(f"Format invalide pour {c}")
             return None
         
@@ -34,7 +36,7 @@ def parserCartes(entree, joueur, typePli, min):
 
         carteObj = trouverCarte(joueur.main, symbole, valeurIndex)
         if not carteObj:
-            print("Vous n'avez pas cette carte {c}")
+            print(f"Vous n'avez pas cette carte {colorCards(c)}")
             return None
         
         if carteObj in cartes:
@@ -65,7 +67,7 @@ def trouverCarte(main, symbole, valeur):
 def demander(type):
     if type[0] == "typePli":
         while True:
-            pli = input("Quel type voulez-vous jouez ? (1-4)\n> ")
+            pli = input("Quel taille de pli voulez vous jouer ? (1-4)\n> ")
             try:
                 pli = int(pli)
             except ValueError:
@@ -74,7 +76,7 @@ def demander(type):
             if pli not in (1, 2, 3, 4):
                 print("Veuillez renseignez un nombre entre 1 et 4")
                 continue
-            if not type[1].hasCombinaison(pli):
+            if not type[1].aCombinaison(pli):
                 print("Vous n'avez pas ce type dans votre main")
                 continue
             
@@ -93,6 +95,15 @@ def absListe(liste):
         return True
     else:
         return None
+    
+def colorCards(string):
+    if string[0] == 's' or string[0] == 'c':
+        color = Fore.BLACK
+    else:
+        color = Fore.RED
+    
+    colored = color + string
+    return colored
 
 class Carte:
     def __init__(self, symbole, valeur):
@@ -132,7 +143,7 @@ class Joueur:
             occurence[v] = occurence.get(v, 0) + 1
         return occurence
     
-    def hasCombinaison(self, type):
+    def aCombinaison(self, type):
         occurence = self.mainCheck()
         resultat = []
 
@@ -178,7 +189,7 @@ dernierJoueur = None
 
 while True:
     if nbTour == 0:
-        temp = 0
+        #temp = 0
         for j in game.joueurs:
             j.peutJoeur = True
 
@@ -186,16 +197,16 @@ while True:
     game.joueurs[actuelJoueur].trierMain()
     print(game.joueurs[actuelJoueur].main)
     print("Voici votre main:",
-        "\nVos combinaisons simples :", game.joueurs[actuelJoueur].hasCombinaison(1),
-        "\nVos combinaisons paires :", game.joueurs[actuelJoueur].hasCombinaison(2),
-        "\nVos combinaisons brelans :", game.joueurs[actuelJoueur].hasCombinaison(3),
-        "\nVos combinaisons carrés :", game.joueurs[actuelJoueur].hasCombinaison(4))
+        "\nVos combinaisons simples :", game.joueurs[actuelJoueur].aCombinaison(1),
+        "\nVos combinaisons paires :", game.joueurs[actuelJoueur].aCombinaison(2),
+        "\nVos combinaisons brelans :", game.joueurs[actuelJoueur].aCombinaison(3),
+        "\nVos combinaisons carrés :", game.joueurs[actuelJoueur].aCombinaison(4))
     
     if nbTour == 0:
         typePli = demander(["typePli", game.joueurs[actuelJoueur]])
 
-    if game.joueurs[actuelJoueur].hasCombinaison(typePli) != []:
-        if max(game.joueurs[actuelJoueur].hasCombinaison(typePli)) < valeurMin:
+    if game.joueurs[actuelJoueur].aCombinaison(typePli) != []:
+        if max(game.joueurs[actuelJoueur].aCombinaison(typePli)) < valeurMin:
             game.joueurs[actuelJoueur].peutJouer = False
             input("Vous ne pouvez pas jouer le pli actuel !")
         else:
@@ -205,6 +216,7 @@ while True:
 
                 cartesJouees = parserCartes(entree, game.joueurs[actuelJoueur], typePli, valeurMin)
                 if cartesJouees is not None:
+                    #TODO Fallback error handling in parse
                     break
                 print("Veuillez réessayer.")
             
